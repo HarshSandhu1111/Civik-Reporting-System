@@ -1,5 +1,6 @@
+const generatetoken = require('../config/generatetoken');
 const User = require('../models/user');
-
+const Report = require('../models/report');
 const signup = async(req,res)=>{
     const {name,email,password,role,departmentId,phone,address} = req.body;
         if(!name || !email || !password || !address  || !phone){
@@ -22,8 +23,19 @@ const signup = async(req,res)=>{
         address
     });
     
-    res.status(200).json(user);
-    
+     res.status(200).json(
+      {  name,
+        email,
+         password,
+        role,
+        departmentId,
+        phone,
+        address,
+        token : generatetoken(user._id,role)
+      }
+   
+    );
+       return;
     
         }
         catch(error){
@@ -42,8 +54,18 @@ const login = async(req,res)=>{
     const user = await User.findOne({email});
     if(user){
         if(password == user.password){
-            return res.status(200).json(user);
-        }
+       res.status(200).json({
+        id:user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        departmentId: user.departmentId,
+        phone: user.phone,
+        address: user.address,
+        token: generatetoken(user._id, user.role)
+               });
+
+       }
         else{
             return res.status(400).json("Invalid Password");
         }
@@ -57,4 +79,32 @@ catch(error){
 }
 };
 
-module.exports = {signup,login};
+const generateReport = async (req,res) => {
+        const {title,description,location,image,departmentId} = req.body;
+        let citizenId = req.user.id;
+        
+        if(!title || !description || !location || !citizenId){
+            return res.status(400).json("Provided detail is not enough");
+        }
+        try{
+        const report =await  Report.create({
+            title,
+            description,
+            location,
+            image,
+            departmentId,
+            citizenId
+        });
+        if(report){
+            return res.status(200).json({report});
+        }
+   
+    }
+    catch(error){
+        res.status(400).json(error);
+    }
+        
+};
+
+
+module.exports = {signup,login,generateReport};

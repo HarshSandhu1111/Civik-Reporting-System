@@ -9,6 +9,7 @@ app.use(express.json());
 app.use('/',Routes);
 
 
+
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected"))
   .catch(err => console.log("❌ Error:", err));
