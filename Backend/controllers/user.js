@@ -107,4 +107,43 @@ const generateReport = async (req,res) => {
 };
 
 
-module.exports = {signup,login,generateReport};
+const getreports = async (req,res) => {
+    const id = req.user.id;
+    try {
+        const allreports = await Report.find({citizenId: id });
+        if(!allreports){
+            res.status(200).json("NO REPORT FOUND");
+        return;
+        }
+        return res.status(200).json(allreports);
+
+
+    } catch (error) {
+        res.json(error);
+    }
+}
+const deleteReport = async (req, res) => {
+  const reportId = req.params.id;   
+  const userId = req.user.id;       
+
+  try {
+    const report = await Report.findById(reportId);
+
+    if (!report) {
+         return res.status(404).json({ message: "Report not found" });
+    }
+    if (report.citizenId.toString() !== userId) {
+      return res.status(403).json({ message: "You are not authorized to delete this report" });
+    }
+
+        await Report.findByIdAndDelete(reportId);
+
+        res.status(200).json({ message: "Report deleted successfully" });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+module.exports = {signup,login,generateReport,getreports,deleteReport};
