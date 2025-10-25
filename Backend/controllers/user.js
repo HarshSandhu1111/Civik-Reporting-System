@@ -1,6 +1,7 @@
 const generatetoken = require('../config/generatetoken');
 const User = require('../models/user');
 const Report = require('../models/report');
+const Department = require('../models/department');
 const signup = async(req,res)=>{
     const {name,email,password,role,departmentId,phone,address} = req.body;
         if(!name || !email || !password || !address  || !phone){
@@ -31,7 +32,7 @@ const signup = async(req,res)=>{
         departmentId,
         phone,
         address,
-        token : generatetoken(user._id,role)
+        token : generatetoken(user._id,role,departmentId)
       }
    
     );
@@ -62,7 +63,7 @@ const login = async(req,res)=>{
         departmentId: user.departmentId,
         phone: user.phone,
         address: user.address,
-        token: generatetoken(user._id, user.role)
+        token: generatetoken(user._id, user.role,user.departmentId)
                });
 
        }
@@ -109,19 +110,33 @@ const generateReport = async (req,res) => {
 
 const getreports = async (req,res) => {
     const id = req.user.id;
+    
     try {
+        if(req.user.role!="staff"){
         const allreports = await Report.find({citizenId: id });
-        if(!allreports){
+         if(!allreports){
             res.status(200).json("NO REPORT FOUND");
         return;
         }
-        return res.status(200).json(allreports);
+                return res.status(200).json(allreports);
 
+        }
+        else{
+const allreports = await Report.find({ departmentId: req.user.departmentId });
 
+  if(!allreports){
+            res.status(200).json("NO REPORT FOUND");
+        return;
+        }
+                return res.status(200).json(allreports);
+
+        }
+        
     } catch (error) {
         res.json(error);
     }
-}
+};
+
 const deleteReport = async (req, res) => {
   const reportId = req.params.id;   
   const userId = req.user.id;       
@@ -146,4 +161,63 @@ const deleteReport = async (req, res) => {
   }
 };
 
-module.exports = {signup,login,generateReport,getreports,deleteReport};
+const updatestatus = async (req, res) => {
+    const { status } = req.params;  
+    const { id } = req.body;        
+
+    try {
+        if (req.user.role !== "staff") {
+            return res.status(403).json({ message: "Access denied: Only staff can update status" });
+        }
+
+        const report = await Report.findByIdAndUpdate(
+            id,
+            { status: status },
+            { new: true }     
+        );
+
+        if (!report) {
+            return res.status(404).json({ message: "Report not found" });
+        }
+
+        return res.status(200).json({
+            message: "Status updated successfully",
+            report
+        });
+
+    } catch (error) {
+        return res.status(500).json({ message: "Server error", error });
+    }
+};
+
+
+const createdepartment= async (req,res) => {
+        const {name,description,head} = req.body;
+        
+        const existingdept = await Department.findOne({name});
+        try {
+
+        if(req.user.role!='admin'){
+            return res.status(400).json("Only admin can create Departments");
+        }
+        if(existingdept){
+            return res.status(400).json("Department already exist");
+        }  
+
+
+        const newdepartment  = await Department.create({
+            name,
+            description,
+            head
+        });
+                return res.status(200).json(newdepartment);
+
+    }
+        
+catch (error) {
+          return res.json(error);  
+        }
+
+}
+
+module.exports = {signup,login,generateReport,getreports,deleteReport,createdepartment,updatestatus};
