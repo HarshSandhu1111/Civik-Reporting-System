@@ -113,16 +113,18 @@ const getreports = async (req,res) => {
     
     try {
         if(req.user.role!="staff"){
-        const allreports = await Report.find({citizenId: id });
+        const allreports = await Report.find({citizenId: id }).populate("citizenId", "name email")
+        .populate("departmentId", "name");
          if(!allreports){
             res.status(200).json("NO REPORT FOUND");
         return;
         }
-                return res.status(200).json(allreports);
+                return res.status(200).json(allreports)
 
         }
         else{
-const allreports = await Report.find({ departmentId: req.user.departmentId });
+const allreports = await Report.find({ departmentId: req.user.departmentId }).populate("citizenId", "name email")
+        .populate("departmentId", "name");
 
   if(!allreports){
             res.status(200).json("NO REPORT FOUND");
