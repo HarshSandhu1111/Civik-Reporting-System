@@ -4,7 +4,7 @@ const Report = require('../models/report');
 const Department = require('../models/department');
 const signup = async(req,res)=>{
     const {name,email,password,role,departmentId,phone,address} = req.body;
-        if(!name || !email || !password || !address  || !phone){
+        if(!name || !email || !password || !address ){
             res.status(400).json('Please eneter required fields');
             return ;
         }
