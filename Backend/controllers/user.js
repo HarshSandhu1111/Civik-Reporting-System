@@ -220,6 +220,15 @@ catch (error) {
           return res.json(error);  
         }
 
-}
+};
+ const getdepartment =async (req,res) => {
+    try {
+        const alldepartments = await Department.find();
+        return res.status(200).json(alldepartments);
 
-module.exports = {signup,login,generateReport,getreports,deleteReport,createdepartment,updatestatus};
+    } catch (error) {
+        return res.json(error);
+    }
+ }
+
+module.exports = {signup,login,generateReport,getreports,deleteReport,createdepartment,updatestatus,getdepartment};

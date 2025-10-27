@@ -1,13 +1,33 @@
 import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import './Login.css'
+import axios from "axios";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const API = "http://localhost:5000";
 
-  function handleSubmit(){
+  const handleSubmit= async(event)=>{
+   event.preventDefault();
 
+    try {
+      const res = await axios.post(
+        `${API}/login`,
+        { email, password },
+        { withCredentials: true }
+      );
+
+      console.log(res.data);
+        let token = res.data.token;
+       localStorage.setItem("token", token); // store in localStorage
+
+      alert("Login Successful !");
+      navigate('/Dashboard');
+    } catch (error) {
+      console.error("Signup Error:", error);
+      alert(error.response?.data || "Login failed");
+    }
   }
 
 
@@ -25,7 +45,7 @@ const Login = () => {
   onChange={(e) => setEmail(e.target.value)}
   placeholder="Enter your email"
   required
-  pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+
   title="Please enter a valid email address"
 />
 
