@@ -11,8 +11,19 @@ const signup = async(req,res)=>{
         try{
     const alreadyexist = await User.findOne({email});
     if(alreadyexist){
-        res.json("user already exist");
-    return;
+  return res.status(400).json("user already exist");
+    }
+
+    if(role=="staff"){
+          if (!departmentId) {
+        return res.status(400).json("Department ID is required for staff");
+        
+    }
+        const department = await Department.findById(departmentId);
+        if(!department){
+            return res.status(400).json("Department not found");
+        }
+        
     }
     const user = await User.create({
         name,
